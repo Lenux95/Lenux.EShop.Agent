@@ -98,7 +98,7 @@ def load_document(file_path:str,add_metadata:bool) ->List[Document]:
         ValueError: _description_
 
     Returns:
-        List[Document]: 文档加载内容
+        List[Document]: 文档加载内容 document
     """
     file_obj=Path(file_path)
     if not file_obj.exists():
@@ -127,12 +127,71 @@ def load_document(file_path:str,add_metadata:bool) ->List[Document]:
     except Exception as e:
         raise ValueError(f"文件加载失败:{file_path}")
     
-# def load_documents(directory_path:str)->List[Document]:
-#     directory_obj=Path(directory_path)
-#     if not directory_obj.exists:
-#         raise FileNotFoundError("目录不存在")
-#     if not directory_obj.is_dir:
-#         raise ValueError("该地址不是目录")
+def load_documents(
+        directory_path:str,
+        recursive: bool,
+        exclude_patterns: Optional[List[str]] = None,
+        max_files:Optional[int]=None,
+        )->List[Document]:
+    """
+    批量加载目录下的文件
+
+    Args:
+        directory_path (str): 目录地址
+        recursive (bool): 是否递归加载文件
+        exclude_patterns (Optional[List[str]], optional):排除模式
+        max_files (Optional[int], optional): 最大文件数量
+
+    Raises:
+        FileNotFoundError: _description_
+        ValueError: _description_
+
+    Returns:
+        List[Document]: 文档加载内容 document
+    """
+    directory_obj=Path(directory_path)
+    if not directory_obj.exists:
+        raise FileNotFoundError("目录不存在")
+    if not directory_obj.is_dir:
+        raise ValueError("该地址不是目录")
     
-    
-    
+    #支持类型的所有文件对象
+    all_files=[]
+    for item in SUPPORTED_EXTENSIONS.keys():
+        partten=f"**/.{item}" if recursive else "*/.{item}"
+        files=list(directory_obj.glob(partten))
+        all_files.append(files)
+
+    #排除文件
+    if exclude_patterns:
+        filtered_files = []
+        for item in all_files:
+            is_include=True
+            for pattern in exclude_patterns:
+                if item.match(partten):
+                    is_include=False
+                    break
+            if is_include:
+                filtered_files.append(item)
+        all_files=filtered_files
+
+    #限制文件数量
+    if max_files is not None and len(all_files)>max_files:
+        #logger.warning(f"⚠️  文件数量 ({len(all_files)}) 超过限制 ({max_files})，只加载前 {max_files} 个")
+        all_files = all_files[:max_files]
+
+    #加载文件
+    all_docs=[]
+    success_count = 0  # 成功加载的文件数
+    error_count = 0    # 加载失败的文件数
+    for doc in all_files:
+        try:
+            docs=load_document(str(doc),True)
+            all_docs.append(docs)
+            success_count += 1
+        except Exception as e:
+            error_count +=1
+            continue
+
+    return all_docs
+        
