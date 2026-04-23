@@ -1,3 +1,11 @@
+'''
+文件加载器，用于处理多种格式文档
+
+-支持pdf、txt、md、html、json格式
+-支持单文件路径和单目录路径批量加载
+-添加元数据
+
+'''
 
 from typing import Union
 from pathlib import Path

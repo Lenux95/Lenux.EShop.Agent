@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional
 from loguru import logger
 
-from .setting import settings
+from .settings import settings
 
 
 def setup_logging(
