@@ -293,7 +293,7 @@ def get_text_splitter(..., **kwargs) -> Any:
 
 ### 4.1 文件结构
 
-```
+```python
 config/
 ├── __init__.py      # 包初始化，导出核心功能
 ├── settings.py      # 应用配置（Pydantic）
@@ -427,7 +427,7 @@ for i, file_path in enumerate(all_files, 1):  # 从 1 开始计数
 
 ## 六、项目结构（参考）
 
-```
+```python
 backend/
 ├── config/
 │   ├── __init__.py
