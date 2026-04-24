@@ -1,7 +1,13 @@
 '''
 文本分块
 
--
+支持多种文档文档或文本进行分块
+
+支持的分块器：
+- RecursiveCharacterTextSplitter: 递归字符分块（推荐）
+- CharacterTextSplitter: 简单字符分块
+- MarkdownTextSplitter: Markdown 专用分块
+- TokenTextSplitter: 基于 Token 的分块
 
 '''
 
