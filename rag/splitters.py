@@ -55,7 +55,7 @@ def get_text_spliter (
         return RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            lenth_function=len,
+            length_function=len,
             is_separator_regex=False,
             **kwargs,
         )

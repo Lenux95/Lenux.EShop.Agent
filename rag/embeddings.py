@@ -2,7 +2,7 @@
 向量化
 
 统一的embedding接口
--支持local（）、huggingface（）
+-支持local（ollama）
 
 '''
 
@@ -24,8 +24,8 @@ def get_embddings(
 
     Args:
         backend (str, optional): 后端类型
-                                    -ollma本地模型
-                                    -huggingface云端模型
+                                -ollma本地模型
+                                -huggingface云端模型
         model (Optional[str], optional): embddings模型
         batch_size (Optional[int], optional): 批处理大小
 
@@ -33,11 +33,11 @@ def get_embddings(
         ValueError: _description_
 
     Returns:
-        Embeddings: _description_
+        Embeddings: 向量化模型实例
     """    
     # todo 修改向量化默认配置项
     model=model or settings.embedding_model
-    batch_size = batch_size or batch_size
+    batch_size = batch_size or settings.embedding_batch_size
 
     logger.info(
         f"向量化模型为{model}"
@@ -56,3 +56,27 @@ def get_embddings(
     except Exception as e:
         logger.error(f"创建项链模型 {model} 失败")
         raise
+
+def get_embedding_dimension(model:Optional[str]=None)->int:
+    """
+    获取对应模型的嵌入维度
+
+    Args:
+        model (Optional[str], optional): 模型
+
+    Returns:
+        int: 嵌入维度
+    """    
+
+    model=model or settings.embedding_model
+
+    dimensions={
+        "qwen3-embedding:0.6b":512,  #128-768
+        # todo 补充推荐模型维度
+    }
+
+    if model in dimensions:
+        return dimensions[model]
+    else:
+        return 768
+    
