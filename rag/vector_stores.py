@@ -43,7 +43,7 @@ def create_vector_store(
     """    
     vector_store_type = store_type or settings.vector_store_type
 
-    logger.info(f"向量库{type}开始创建")
+    logger.info(f"向量库{vector_store_type}开始创建")
            
     try:
         if vector_store_type=="chroma":
@@ -68,7 +68,7 @@ def create_vector_store(
                 **kwargs
             )
         else:
-            raise ValueError(f"不支持的向量库类型：{type}")
+            raise ValueError(f"不支持的向量库类型：{vector_store_type}")
     except Exception as e:
         logger.error(f"创建向量库失败: {e}")
         raise
@@ -213,7 +213,7 @@ def search_vector_store(
 
     try:
         # 带得分搜索，可评估检索质量
-        results=vector_store.similarity_search_with_relevance_scores(
+        results=vector_store.similarity_search_with_score(
             query=query,
             k=k,
         )

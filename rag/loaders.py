@@ -128,7 +128,7 @@ def load_document(file_path:str,add_metadata:bool) ->List[Document]:
                     item.metadata={}
                 item.metadata.update({
                     "source":file_path,
-                    "file_type":SUPPORTED_EXTENSIONS[f"{file_obj.suffix.lower}"],
+                    "file_type":SUPPORTED_EXTENSIONS[file_obj.suffix.lower()],
                     "filename":file_obj.name
                 })
         return document
