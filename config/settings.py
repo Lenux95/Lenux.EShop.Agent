@@ -145,8 +145,8 @@ class Settings(BaseSettings):
     # ==================== RAG 配置 ====================
     # Embedding 配置
     embedding_model: str = Field(
-        default="text-embedding-3-small",
-        description="OpenAI Embedding 模型名称"
+        default="qwen3-Embedding-0.6b",
+        description="qwen Embedding 模型名称"
     )
     
     embedding_batch_size: int = Field(

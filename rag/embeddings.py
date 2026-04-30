@@ -25,7 +25,6 @@ def get_embddings(
     Args:
         backend (str, optional): 后端类型
                                 -ollma本地模型
-                                -huggingface云端模型
         model (Optional[str], optional): embddings模型
         batch_size (Optional[int], optional): 批处理大小
 
@@ -49,7 +48,7 @@ def get_embddings(
                 model=model,
                 **kwargs,
             )
-        # todo api访问向量化
+        # todo 使用api访问 向量化
         else:
             logger.error(f"不支持的后端{backend}")
             raise ValueError(f"不支持的后端{backend}")
