@@ -1,3 +1,24 @@
+"""
+向量库操作模块
+
+提供统一的向量数据库接口，支持多种向量存储后端：
+- InMemoryVectorStore: 内存向量库，用于开发测试
+- Chroma: 可选的向量库
+
+Raises:
+    ImportError: _description_
+    ValueError: _description_
+    ValueError: _description_
+    ValueError: _description_
+    FileNotFoundError: _description_
+    ImportError: _description_
+    ValueError: _description_
+    ValueError: _description_
+
+Returns:
+    _type_: _description_
+"""
+
 from typing import List,Optional,Literal
 from pathlib import Path
 import os

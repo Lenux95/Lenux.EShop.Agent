@@ -49,6 +49,12 @@ class Settings(BaseSettings):
         description="是否默认启用流式输出"
     )
     
+    # ==================== ollama 模型配置 ====================
+    ollama_model: str = Field(
+        default="qwen2.5:7b-instruct-32k",
+        description="默认使用的 ollama 模型"
+    )
+
     # ==================== Tavily 搜索配置 ====================
     tavily_api_key: str = Field(
         default="",
@@ -173,7 +179,7 @@ class Settings(BaseSettings):
     
     # 向量库配置
     vector_store_type: str = Field(
-        default="faiss",
+        default="chroma",
         description="向量库类型：faiss, inmemory, chroma"
     )
     
