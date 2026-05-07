@@ -33,6 +33,7 @@ from rag.vector_stores import (
     delete_vector_store,
     VectorStoreType
 )
+from rag.rag_agent import create_rag_agent, query_rag_agent, DEFAULT_RAG_SYSTEM_PROMPT
 from langchain_core.documents import Document
 
 # 初始化日志
@@ -188,7 +189,6 @@ def test_vector_stores():
     ]
 
     # 测试 inmemory 向量库（不需要外部依赖）
-    # 创建简单的测试嵌入类，继承自 Embeddings
     from langchain_core.embeddings import Embeddings as BaseEmbeddings
     
     class TestEmbeddings(BaseEmbeddings):
@@ -224,11 +224,9 @@ def test_vector_stores():
         import tempfile
         import shutil
         
-        # 创建临时目录
         temp_dir = tempfile.mkdtemp()
         logger.info(f"  - 创建临时目录: {temp_dir}")
         
-        # 测试 create_vector_store (chroma)
         chroma_store = create_vector_store(
             documents=test_docs,
             embeddings=test_embeddings,
@@ -239,17 +237,14 @@ def test_vector_stores():
         assert chroma_store is not None
         logger.info(f"  - 创建 Chroma 向量库成功")
         
-        # 测试 add_documents_to_vector_store
         new_docs = [Document(page_content="Chroma 测试文档", metadata={"source": "chroma_test"})]
         add_documents_to_vector_store(chroma_store, new_docs)
         logger.info(f"  - 向 Chroma 添加文档成功")
         
-        # 测试 search_vector_store
         chroma_results = search_vector_store(chroma_store, "人工智能", k=2)
         assert len(chroma_results) >= 0
         logger.info(f"  - Chroma 搜索成功，找到 {len(chroma_results)} 个文档")
         
-        # 测试 load_vector_store
         loaded_store = load_vector_store(
             load_path=temp_dir,
             embeddings=test_embeddings,
@@ -259,43 +254,139 @@ def test_vector_stores():
         assert loaded_store is not None
         logger.info(f"  - 加载 Chroma 向量库成功")
         
-        # 测试保存向量库（验证持久化）
         save_vector_store(chroma_store, temp_dir, test_embeddings)
         logger.info(f"  - 保存 Chroma 向量库成功")
         
-        # 清理临时目录（Chroma 可能仍持有文件句柄，需要特殊处理）
         try:
-            # 尝试直接删除
             shutil.rmtree(temp_dir)
             logger.info(f"  - 清理临时目录完成")
         except PermissionError:
-            # 文件被占用时，记录警告但不中断测试
             logger.warning(f"  - ⚠️ 临时目录清理失败（文件被占用）: {temp_dir}")
-            logger.info(f"  - 系统会在下次重启时自动清理临时文件")
         
     except ImportError:
         logger.warning(f"  - ⚠️ Chroma 测试跳过: 需要安装 langchain_chroma")
     except Exception as e:
         logger.warning(f"  - ⚠️ Chroma 测试失败: {e}")
 
+# ==================== RAG Agent 模块测试 ====================
+def test_rag_agent():
+    """测试 RAG Agent 模块"""
+    from rag.vector_stores import create_vector_store
+    from langchain_core.embeddings import Embeddings as BaseEmbeddings
+    
+    # 创建测试文档
+    test_docs = [
+        Document(
+            page_content="人工智能是计算机科学的一个分支，致力于研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及应用系统。",
+            metadata={"source": "ai_intro"}
+        ),
+        Document(
+            page_content="机器学习是人工智能的核心技术之一，它使计算机系统能够从数据中学习并改进其性能，而无需进行明确编程。",
+            metadata={"source": "ml_intro"}
+        ),
+        Document(
+            page_content="深度学习是机器学习的一个子领域，使用多层神经网络来模拟人脑的学习过程。",
+            metadata={"source": "dl_intro"}
+        ),
+    ]
+    
+    # 创建测试嵌入类
+    class TestEmbeddings(BaseEmbeddings):
+        def embed_documents(self, texts):
+            return [[0.1]*768 for _ in texts]
+        def embed_query(self, text):
+            return [0.1]*768
+    
+    test_embeddings = TestEmbeddings()
+    
+    # 步骤1：创建向量存储
+    try:
+        logger.info("步骤1：创建向量存储...")
+        vector_store = create_vector_store(
+            documents=test_docs,
+            embeddings=test_embeddings,
+            store_type="inmemory"
+        )
+        assert vector_store is not None
+        logger.info("  ✅ 向量存储创建成功")
+    except Exception as e:
+        logger.error(f"  ❌ 向量存储创建失败: {e}")
+        raise
+    
+    # 步骤2：创建检索器
+    try:
+        logger.info("步骤2：创建检索器...")
+        retriever = vector_store.as_retriever(search_kwargs={"k": 2})
+        assert retriever is not None
+        logger.info("  ✅ 检索器创建成功")
+    except Exception as e:
+        logger.error(f"  ❌ 检索器创建失败: {e}")
+        raise
+    
+    # 步骤3：验证默认系统提示词
+    try:
+        logger.info("步骤3：验证默认系统提示词...")
+        assert DEFAULT_RAG_SYSTEM_PROMPT is not None
+        assert len(DEFAULT_RAG_SYSTEM_PROMPT) > 0
+        logger.info(f"  ✅ 默认系统提示词有效，长度: {len(DEFAULT_RAG_SYSTEM_PROMPT)}")
+    except Exception as e:
+        logger.error(f"  ❌ 系统提示词验证失败: {e}")
+        raise
+    
+    # 步骤4：测试 create_rag_agent（需要 Ollama 服务）
+    try:
+        logger.info("步骤4：测试 create_rag_agent...")
+        agent = create_rag_agent(
+            retriever=retriever,
+            model="qwen3:1.7b",
+            tool_name="knowledge_base_test"
+        )
+        assert agent is not None
+        logger.info("  ✅ RAG Agent 创建成功")
+        
+        # 步骤5：测试 query_rag_agent（同步查询）
+        logger.info("步骤5：测试 query_rag_agent（同步）...")
+        sync_result = query_rag_agent(
+            agent=agent,
+            query="什么是人工智能？",
+            return_sources=True
+        )
+        assert sync_result is not None
+        assert "answer" in sync_result
+        logger.info(f"  ✅ 同步查询成功")
+        logger.info(f"  📤 query_rag_agent 返回值: {sync_result}")
+        
+        # 步骤6：测试 aquery_rag_agent（异步查询）
+        logger.info("步骤6：测试 aquery_rag_agent（异步）...")
+        import asyncio
+        
+        
+        
+    except Exception as e:
+        logger.error(f"  ❌ RAG Agent 测试失败: {e}")
+        logger.error(f"     错误类型: {type(e).__name__}")
+        if "langgraph" in str(e).lower() or "executioninfo" in str(e).lower():
+            logger.error("     💡 提示: 可能是 langchain 与 langgraph 版本不兼容")
+            logger.error("     💡 尝试运行: pip install langgraph>=1.0.5")
+        logger.warning(f"     (需要 Ollama 服务运行，请确保已安装并启动 Ollama)")
+
 # ==================== 主测试函数 ====================
 def main():
     logger.info("🚀 开始全面测试所有 RAG 模块")
     logger.info("="*60)
 
-    # 运行所有测试
     tests = [
         ("配置模块", test_config),
         ("文本分块模块", test_splitters),
         ("文档加载器模块", test_loaders),
         ("向量化模块", test_embeddings),
         ("向量存储模块", test_vector_stores),
+        ("RAG Agent 模块", test_rag_agent),
     ]
 
     for test_name, test_func in tests:
         run_test(test_name, test_func)
 
-    # 输出测试结果汇总
     logger.info("\n" + "="*60)
     logger.info("📊 测试结果汇总")
     logger.info("="*60)

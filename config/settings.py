@@ -26,6 +26,11 @@ class Settings(BaseSettings):
         default="https://api.openai.com/v1",
         description="OpenAI API 基础 URL"
     )
+
+    openai_base_url: str = Field(
+        default="https://api.openai.com/v1",
+        description="OpenAI API 基础 URL"
+    )
     
     openai_model: str = Field(
         default="gpt-4o",
