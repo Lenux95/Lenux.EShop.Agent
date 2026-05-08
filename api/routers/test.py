@@ -9,46 +9,10 @@ logger = get_logger("test_router")
 
 router = APIRouter()
 
-@router.get("/hello")
-async def hello_world():
-    """
-    简单的 hello world 接口
-    """
-    logger.info("调用 hello_world 接口")
-    return {"message": "Hello, World!"}
-
-@router.get("/greet/{name}")
-async def greet(name: str):
-    """
-    打招呼接口
-    """
-    logger.info(f"调用 greet 接口，name={name}")
-    return {"message": f"Hello, {name}!"}
-
-@router.get("/status")
-async def get_status():
-    """
-    获取服务状态
-    """
-    logger.info("调用 get_status 接口")
-    return {
-        "status": "running",
-        "service": "RAG API",
-        "version": "0.1.0"
-    }
-
-@router.get("/echo/{text}")
-async def echo(text: str):
-    """
-    回声接口
-    """
-    logger.info(f"调用 echo 接口，text={text}")
-    return {"echo": text}
-
 @router.post("/agent/query")
 async def query_agent(data: dict):
     """
-    RAG Agent 查询接口
+    RAG Agent 测试接口
     
     Args:
         data: 包含 query 的字典，例如 {"query": "你的问题"}
@@ -97,3 +61,7 @@ async def query_agent(data: dict):
     except Exception as e:
         logger.error(f"❌ RAG 查询失败: {e}")
         return {"error": str(e)}
+    
+
+
+
